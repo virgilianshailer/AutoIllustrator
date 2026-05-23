@@ -84,7 +84,7 @@ var MSG_POSITIONS={'top-left':{l:'↖',css:'top:4px;left:4px;bottom:auto;right:a
 
 /* ============ DEFAULTS ============ */
 var DEFAULTS={enabled:false,autoGenerate:true,imagesPerMessage:2,preferDirectComfy:true,compressImages:true,compressionQuality:0.82,maxStoredImageWidth:1024,generateTimeoutMs:180000,minMessageLength:80,showGalleryButton:true,workflowPresets:[],activePresetId:'',galleryPosition:'mid-right',msgBtnPosition:'bottom-right',comfyUrl:'',hidePrompts:false};
-var PRESET_DEFAULTS={name:'Untitled',workflow:'',promptFormat:'flux',customInstructions:'',negativePrompt:'',width:1024,height:768,model:'',vae:'',sampler:'',scheduler:'',steps:0,cfg:0,denoise:1,clipSkip:0,enableLoraMatching:false,loraLibraryText:'',maxLorasPerImage:2,alwaysOnLoras:[],enableCharRouting:false,charPresetId:'',adaptiveAspect:true,useCharDescription:true};
+var PRESET_DEFAULTS={name:'Untitled',workflow:'',promptFormat:'flux',customInstructions:'',negativePrompt:'',width:1024,height:768,model:'',vae:'',sampler:'',scheduler:'',steps:0,cfg:0,denoise:1,clipSkip:0,clipName:'',clipName1:'',clipName2:'',seed:0,batchSize:1,enableLoraMatching:false,loraLibraryText:'',maxLorasPerImage:2,alwaysOnLoras:[],enableCharRouting:false,charPresetId:'',adaptiveAspect:true,useCharDescription:true};
 
 function S(){return extension_settings[M];}
 function loadSettings(){
@@ -104,9 +104,9 @@ function savePreset(p){var list=presets(),idx=list.findIndex(function(x){return 
 function deletePresetById(id){S().workflowPresets=presets().filter(function(p){return p.id!==id;});if(S().activePresetId===id)S().activePresetId=presets()[0]?.id||'';saveSettingsDebounced();}
 function setActive(id){S().activePresetId=id;saveSettingsDebounced();}
 
-function syncUIToPreset(){var p=activePreset();if(!p)return;p.workflow=$('#ai_wf_json').val()||'';p.promptFormat=$('#ai_prompt_fmt').val()||'flux';p.customInstructions=$('#ai_custom_instr').val()||'';p.negativePrompt=$('#ai_neg').val()||'';p.width=parseInt($('#ai_w').val())||1024;p.height=parseInt($('#ai_h').val())||768;p.model=$('#ai_p_model').val()||'';p.vae=$('#ai_p_vae').val()||'';p.sampler=$('#ai_p_sampler').val()||'';p.scheduler=$('#ai_p_scheduler').val()||'';p.steps=parseInt($('#ai_p_steps').val())||0;p.cfg=parseFloat($('#ai_p_cfg').val())||0;p.denoise=parseFloat($('#ai_p_denoise').val());if(isNaN(p.denoise))p.denoise=1;p.clipSkip=parseInt($('#ai_p_clipskip').val())||0;p.enableLoraMatching=$('#ai_lora_on').prop('checked');p.loraLibraryText=$('#ai_lora_lib').val()||'';p.maxLorasPerImage=parseInt($('#ai_lora_max').val())||2;p.enableCharRouting=$('#ai_char_route').prop('checked');p.charPresetId=$('#ai_char_preset').val()||'';p.adaptiveAspect=$('#ai_adapt').prop('checked');p.useCharDescription=$('#ai_char_desc').prop('checked');savePreset(p);}
+function syncUIToPreset(){var p=activePreset();if(!p)return;p.workflow=$('#ai_wf_json').val()||'';p.promptFormat=$('#ai_prompt_fmt').val()||'flux';p.customInstructions=$('#ai_custom_instr').val()||'';p.negativePrompt=$('#ai_neg').val()||'';p.width=parseInt($('#ai_w').val())||1024;p.height=parseInt($('#ai_h').val())||768;p.model=$('#ai_p_model').val()||'';p.vae=$('#ai_p_vae').val()||'';p.sampler=$('#ai_p_sampler').val()||'';p.scheduler=$('#ai_p_scheduler').val()||'';p.steps=parseInt($('#ai_p_steps').val())||0;p.cfg=parseFloat($('#ai_p_cfg').val())||0;p.denoise=parseFloat($('#ai_p_denoise').val());if(isNaN(p.denoise))p.denoise=1;p.clipSkip=parseInt($('#ai_p_clipskip').val())||0;p.clipName=$('#ai_p_clip').val()||'';p.clipName1=$('#ai_p_clip1').val()||'';p.clipName2=$('#ai_p_clip2').val()||'';p.seed=parseInt($('#ai_p_seed').val())||0;p.batchSize=parseInt($('#ai_p_batch').val())||1;p.enableLoraMatching=$('#ai_lora_on').prop('checked');p.loraLibraryText=$('#ai_lora_lib').val()||'';p.maxLorasPerImage=parseInt($('#ai_lora_max').val())||2;p.enableCharRouting=$('#ai_char_route').prop('checked');p.charPresetId=$('#ai_char_preset').val()||'';p.adaptiveAspect=$('#ai_adapt').prop('checked');p.useCharDescription=$('#ai_char_desc').prop('checked');savePreset(p);}
 
-function loadPresetToUI(){var p=activePreset();$('#ai_wf_json').val(p?p.workflow:'');$('#ai_prompt_fmt').val(p?p.promptFormat:'flux');$('#ai_custom_instr').val(p?p.customInstructions:'');$('#ai_neg').val(p?p.negativePrompt:'');$('#ai_w').val(p?p.width:1024);$('#ai_h').val(p?p.height:768);$('#ai_p_model').val(p?p.model||'':'');$('#ai_p_vae').val(p?p.vae||'':'');$('#ai_p_sampler').val(p?p.sampler||'':'');$('#ai_p_scheduler').val(p?p.scheduler||'':'');$('#ai_p_steps').val(p&&p.steps?p.steps:'');$('#ai_p_cfg').val(p&&p.cfg?p.cfg:'');$('#ai_p_denoise').val(p?p.denoise:1);$('#ai_p_clipskip').val(p&&p.clipSkip?p.clipSkip:'');$('#ai_lora_on').prop('checked',p?!!p.enableLoraMatching:false);$('#ai_lora_opts').toggle(p?!!p.enableLoraMatching:false);$('#ai_lora_lib').val(p?p.loraLibraryText||'':'');$('#ai_lora_max').val(p?p.maxLorasPerImage||2:2);$('#ai_char_route').prop('checked',p?!!p.enableCharRouting:false);$('#ai_route_opts').toggle(p?!!p.enableCharRouting:false);rebuildCharPresetDD();$('#ai_char_preset').val(p?p.charPresetId||'':'');$('#ai_adapt').prop('checked',p?p.adaptiveAspect!==false:true);$('#ai_char_desc').prop('checked',p?p.useCharDescription!==false:true);renderAlwaysOnList();updateFmtInfo();}
+function loadPresetToUI(){var p=activePreset();$('#ai_wf_json').val(p?p.workflow:'');$('#ai_prompt_fmt').val(p?p.promptFormat:'flux');$('#ai_custom_instr').val(p?p.customInstructions:'');$('#ai_neg').val(p?p.negativePrompt:'');$('#ai_w').val(p?p.width:1024);$('#ai_h').val(p?p.height:768);$('#ai_p_model').val(p?p.model||'':'');$('#ai_p_vae').val(p?p.vae||'':'');$('#ai_p_sampler').val(p?p.sampler||'':'');$('#ai_p_scheduler').val(p?p.scheduler||'':'');$('#ai_p_steps').val(p&&p.steps?p.steps:'');$('#ai_p_cfg').val(p&&p.cfg?p.cfg:'');$('#ai_p_denoise').val(p?p.denoise:1);$('#ai_p_clipskip').val(p&&p.clipSkip?p.clipSkip:'');$('#ai_p_clip').val(p?p.clipName||'':'');$('#ai_p_clip1').val(p?p.clipName1||'':'');$('#ai_p_clip2').val(p?p.clipName2||'':'');$('#ai_p_seed').val(p&&p.seed?p.seed:'');$('#ai_p_batch').val(p?p.batchSize||1:1);$('#ai_lora_on').prop('checked',p?!!p.enableLoraMatching:false);$('#ai_lora_opts').toggle(p?!!p.enableLoraMatching:false);$('#ai_lora_lib').val(p?p.loraLibraryText||'':'');$('#ai_lora_max').val(p?p.maxLorasPerImage||2:2);$('#ai_char_route').prop('checked',p?!!p.enableCharRouting:false);$('#ai_route_opts').toggle(p?!!p.enableCharRouting:false);rebuildCharPresetDD();$('#ai_char_preset').val(p?p.charPresetId||'':'');$('#ai_adapt').prop('checked',p?p.adaptiveAspect!==false:true);$('#ai_char_desc').prop('checked',p?p.useCharDescription!==false:true);renderAlwaysOnList();updateFmtInfo();}
 
 function rebuildPresetDD(){var sel=$('#ai_preset_sel');sel.empty();if(!presets().length)sel.append('<option value="">—</option>');presets().forEach(function(p){sel.append('<option value="'+p.id+'">'+esc(p.name)+'</option>');});sel.val(S().activePresetId||'');}
 function rebuildCharPresetDD(){var sel=$('#ai_char_preset');sel.empty();sel.append('<option value="">— same —</option>');var a=activePreset();presets().forEach(function(p){if(a&&p.id===a.id)return;sel.append('<option value="'+p.id+'">'+esc(p.name)+'</option>');});if(a)sel.val(a.charPresetId||'');}
@@ -181,9 +181,9 @@ function getAvailableCharNames(){var ctx=getContext(),names=[];try{if(ctx.charac
 
 /* ============ COMFYUI OPTIONS ============ */
 var comfyOptionsCache=null;
-async function fetchComfyOptions(){if(comfyOptionsCache)return comfyOptionsCache;var base=getComfyUrl();var o={models:[],samplers:[],schedulers:[],vaes:[],loras:[]};async function ni(t){try{var r=await fetch(base+'/object_info/'+t);if(r.ok)return await r.json();}catch(e){}return null;}try{var ck=await ni('CheckpointLoaderSimple');if(ck&&ck.CheckpointLoaderSimple)o.models=(ck.CheckpointLoaderSimple.input.required.ckpt_name||[[]])[0]||[];var un=await ni('UNETLoader');if(un&&un.UNETLoader)((un.UNETLoader.input.required.unet_name||[[]])[0]||[]).forEach(function(m){if(o.models.indexOf(m)<0)o.models.push(m);});var ks=await ni('KSampler');if(ks&&ks.KSampler){o.samplers=(ks.KSampler.input.required.sampler_name||[[]])[0]||[];o.schedulers=(ks.KSampler.input.required.scheduler||[[]])[0]||[];}var sw=await ni('SwarmKSampler');if(sw&&sw.SwarmKSampler){((sw.SwarmKSampler.input.required.sampler_name||[[]])[0]||[]).forEach(function(s){if(o.samplers.indexOf(s)<0)o.samplers.push(s);});((sw.SwarmKSampler.input.required.scheduler||[[]])[0]||[]).forEach(function(s){if(o.schedulers.indexOf(s)<0)o.schedulers.push(s);});}var va=await ni('VAELoader');if(va&&va.VAELoader)o.vaes=(va.VAELoader.input.required.vae_name||[[]])[0]||[];var lr=await ni('LoraLoader');if(lr&&lr.LoraLoader)o.loras=(lr.LoraLoader.input.required.lora_name||[[]])[0]||[];var sl=await ni('SwarmLoraLoader');if(sl&&sl.SwarmLoraLoader)((sl.SwarmLoraLoader.input.required.lora_name||[[]])[0]||[]).forEach(function(l){if(o.loras.indexOf(l)<0)o.loras.push(l);});comfyOptionsCache=o;}catch(e){}return o;}
+async function fetchComfyOptions(){if(comfyOptionsCache)return comfyOptionsCache;var base=getComfyUrl();var o={models:[],samplers:[],schedulers:[],vaes:[],loras:[],clips:[]};async function ni(t){try{var r=await fetch(base+'/object_info/'+t);if(r.ok)return await r.json();}catch(e){}return null;}try{var ck=await ni('CheckpointLoaderSimple');if(ck&&ck.CheckpointLoaderSimple)o.models=(ck.CheckpointLoaderSimple.input.required.ckpt_name||[[]])[0]||[];var un=await ni('UNETLoader');if(un&&un.UNETLoader)((un.UNETLoader.input.required.unet_name||[[]])[0]||[]).forEach(function(m){if(o.models.indexOf(m)<0)o.models.push(m);});var ks=await ni('KSampler');if(ks&&ks.KSampler){o.samplers=(ks.KSampler.input.required.sampler_name||[[]])[0]||[];o.schedulers=(ks.KSampler.input.required.scheduler||[[]])[0]||[];}var sw=await ni('SwarmKSampler');if(sw&&sw.SwarmKSampler){((sw.SwarmKSampler.input.required.sampler_name||[[]])[0]||[]).forEach(function(s){if(o.samplers.indexOf(s)<0)o.samplers.push(s);});((sw.SwarmKSampler.input.required.scheduler||[[]])[0]||[]).forEach(function(s){if(o.schedulers.indexOf(s)<0)o.schedulers.push(s);});}var va=await ni('VAELoader');if(va&&va.VAELoader)o.vaes=(va.VAELoader.input.required.vae_name||[[]])[0]||[];var lr=await ni('LoraLoader');if(lr&&lr.LoraLoader)o.loras=(lr.LoraLoader.input.required.lora_name||[[]])[0]||[];var sl=await ni('SwarmLoraLoader');if(sl&&sl.SwarmLoraLoader)((sl.SwarmLoraLoader.input.required.lora_name||[[]])[0]||[]).forEach(function(l){if(o.loras.indexOf(l)<0)o.loras.push(l);});var cl=await ni('CLIPLoader');if(cl&&cl.CLIPLoader)o.clips=(cl.CLIPLoader.input.required.clip_name||[[]])[0]||[];var dc=await ni('DualCLIPLoader');if(dc&&dc.DualCLIPLoader){((dc.DualCLIPLoader.input.required.clip_name1||[[]])[0]||[]).forEach(function(c){if(o.clips.indexOf(c)<0)o.clips.push(c);});((dc.DualCLIPLoader.input.required.clip_name2||[[]])[0]||[]).forEach(function(c){if(o.clips.indexOf(c)<0)o.clips.push(c);});}comfyOptionsCache=o;}catch(e){}return o;}
 function populateDatalist(id,items){var dl=$('#'+id);if(!dl.length){dl=$('<datalist id="'+id+'"></datalist>');$('body').append(dl);}dl.empty();items.forEach(function(i){dl.append('<option value="'+esc(i)+'"/>');});}
-async function refreshComfyDropdowns(){comfyOptionsCache=null;toastr.info('Fetching…');var o=await fetchComfyOptions();populateDatalist('ai_dl_models',o.models);populateDatalist('ai_dl_samplers',o.samplers);populateDatalist('ai_dl_schedulers',o.schedulers);populateDatalist('ai_dl_vaes',o.vaes);populateDatalist('ai_dl_loras',o.loras);toastr.success(o.models.length+' models, '+o.loras.length+' LoRAs');}
+async function refreshComfyDropdowns(){comfyOptionsCache=null;toastr.info('Fetching…');var o=await fetchComfyOptions();populateDatalist('ai_dl_models',o.models);populateDatalist('ai_dl_samplers',o.samplers);populateDatalist('ai_dl_schedulers',o.schedulers);populateDatalist('ai_dl_vaes',o.vaes);populateDatalist('ai_dl_loras',o.loras);populateDatalist('ai_dl_clips',o.clips||[]);toastr.success(o.models.length+' models, '+o.loras.length+' LoRAs, '+(o.clips||[]).length+' CLIPs');}
 
 /* ============ LLM ============ */
 function buildPrompt(text,n,fmtKey,customInstr,charName,routing,adaptive,loraLib,maxLoras,charDesc,charNames){
@@ -213,17 +213,178 @@ async function analyseMessage(text,n,fmtKey,customInstr,charName,routing,adaptiv
     return valid.length?valid:null;
 }
 
+/* ============ WORKFLOW AUTO-PLACEHOLDERS ============ */
+/**
+ * Detect a ComfyUI API-format workflow and replace known node inputs with %placeholders%.
+ *
+ * @param {string} jsonStr - The workflow JSON text.
+ * @param {string} [mode='all'] - Either 'all' (every known field, default) or
+ *   'basic' (only %prompt%, %negative_prompt%, %width%, %height%, %seed%). The basic
+ *   set is the minimum to drive a workflow dynamically while leaving the user's
+ *   choices for model/sampler/scheduler/steps/cfg/etc. untouched.
+ *
+ * Recognises: KSampler/KSamplerAdvanced (seed, steps, cfg, sampler_name, scheduler, denoise),
+ * CLIPTextEncode (positive/negative — traced via KSampler.positive/.negative links),
+ * Checkpoint/UNET loaders (ckpt_name/unet_name → %model%),
+ * VAELoader (vae_name → %vae%),
+ * CLIPLoader/DualCLIPLoader (clip_name(1|2) → %clip_name(1|2)%),
+ * CLIPSetLastLayer (stop_at_clip_layer → %clip_skip% — note: negative in Comfy convention),
+ * EmptyLatentImage / EmptySD3LatentImage / ModelSamplingFlux (width/height/batch_size).
+ *
+ * Returns { json: pretty-printed string with placeholders, report: array of human-readable changes }.
+ * Throws on invalid JSON or unrecognised structure (UI workflow format, not API format).
+ */
+function autoPlaceholderWorkflow(jsonStr, mode){
+    mode = mode || 'all';
+    var BASIC_ALLOWED = { '%prompt%':1, '%negative_prompt%':1, '%width%':1, '%height%':1, '%seed%':1 };
+
+    var obj;
+    try{ obj=JSON.parse(jsonStr); }
+    catch(e){ throw new Error('Invalid JSON: '+e.message); }
+    if(!obj||typeof obj!=='object'||Array.isArray(obj))
+        throw new Error('Not an object — expected ComfyUI API-format workflow (with numeric node IDs).');
+    // UI-format detection: has "nodes" array → not API format
+    if(Array.isArray(obj.nodes)&&!Object.keys(obj).some(function(k){return obj[k]&&obj[k].class_type;}))
+        throw new Error('This looks like a ComfyUI UI-format workflow. Please export via "Save (API Format)" in ComfyUI.');
+
+    var report=[];
+    var nodeIds=Object.keys(obj).filter(function(k){return obj[k]&&obj[k].class_type&&obj[k].inputs;});
+    if(!nodeIds.length)
+        throw new Error('No nodes with class_type/inputs found. Is this an API-format workflow?');
+
+    // Pass 1: identify positive/negative CLIPTextEncode nodes by tracing KSampler links
+    var positiveClipIds=new Set();
+    var negativeClipIds=new Set();
+    nodeIds.forEach(function(id){
+        var n=obj[id];
+        var ct=n.class_type||'';
+        if(!/KSampler/i.test(ct)) return;
+        var ins=n.inputs||{};
+        // ComfyUI links look like ["upstream_node_id", output_index]
+        function traceClip(linkVal){
+            if(!Array.isArray(linkVal)||linkVal.length<1) return null;
+            var upId=String(linkVal[0]);
+            var up=obj[upId];
+            if(!up) return null;
+            var upCt=up.class_type||'';
+            if(/CLIPTextEncode/i.test(upCt)) return upId;
+            // Skip through one layer of ConditioningCombine/ConditioningConcat/ConditioningSetArea/etc.
+            // by following the first conditioning-typed input we find.
+            if(/Conditioning/i.test(upCt)&&up.inputs){
+                for(var ik in up.inputs){
+                    if(!up.inputs.hasOwnProperty(ik)) continue;
+                    var r=traceClip(up.inputs[ik]);
+                    if(r) return r;
+                }
+            }
+            return null;
+        }
+        var pId=traceClip(ins.positive);
+        var nId=traceClip(ins.negative);
+        if(pId) positiveClipIds.add(pId);
+        if(nId) negativeClipIds.add(nId);
+    });
+
+    // Pass 2: rewrite node inputs
+    nodeIds.forEach(function(id){
+        var n=obj[id];
+        var ct=n.class_type||'';
+        var ins=n.inputs;
+        function set(field,placeholder,label){
+            if(!ins.hasOwnProperty(field)) return;
+            // Skip if value is already a link (array) — that field is wired from upstream
+            if(Array.isArray(ins[field])) return;
+            // Skip if already a placeholder
+            if(typeof ins[field]==='string'&&/^%[a-z_0-9]+%$/i.test(ins[field])) return;
+            // Basic mode: skip anything outside the allowlist
+            if(mode==='basic'&&!BASIC_ALLOWED[placeholder]) return;
+            var before=ins[field];
+            ins[field]=placeholder;
+            report.push('Node '+id+' ('+ct+'): '+field+' = '+JSON.stringify(before)+' → '+placeholder+(label?'  // '+label:''));
+        }
+
+        // CLIPTextEncode — positive/negative
+        if(/^CLIPTextEncode/i.test(ct)){
+            if(positiveClipIds.has(id))      set('text','%prompt%','positive prompt');
+            else if(negativeClipIds.has(id)) set('text','%negative_prompt%','negative prompt');
+            // If we couldn't trace which is which (no KSampler), leave it alone — safer.
+            return;
+        }
+
+        // KSampler family
+        if(/KSampler/i.test(ct)){
+            set('seed','%seed%');
+            set('noise_seed','%seed%'); // KSamplerAdvanced uses noise_seed
+            set('steps','%steps%');
+            set('cfg','%cfg%');
+            set('sampler_name','%sampler%');
+            set('scheduler','%scheduler%');
+            set('denoise','%denoise%');
+            return;
+        }
+
+        // Checkpoint / UNET / model loaders
+        if(/^CheckpointLoader/i.test(ct)){ set('ckpt_name','%model%'); return; }
+        if(/^UNETLoader/i.test(ct)||/^UnetLoaderGGUF/i.test(ct)){ set('unet_name','%model%'); return; }
+
+        // VAE loader
+        if(/^VAELoader/i.test(ct)){ set('vae_name','%vae%'); return; }
+
+        // CLIP loaders
+        if(/^DualCLIPLoader/i.test(ct)){
+            set('clip_name1','%clip_name1%');
+            set('clip_name2','%clip_name2%');
+            return;
+        }
+        if(/^CLIPLoader/i.test(ct)){ set('clip_name','%clip_name%'); return; }
+
+        // CLIP skip
+        if(/^CLIPSetLastLayer/i.test(ct)){
+            // Comfy's stop_at_clip_layer is conventionally negative (-1 = no skip, -2 = skip 1).
+            // Our %clip_skip% number is positive, but doFillWorkflow inserts it as a number;
+            // since most users want to skip exactly 1-2 layers we still expose it as a
+            // placeholder and let the preset's CLIP value drive it.
+            set('stop_at_clip_layer','%clip_skip%');
+            return;
+        }
+
+        // Latent image — width/height/batch
+        if(/^Empty.*Latent/i.test(ct)||/^ModelSamplingFlux/i.test(ct)||/^EmptySD3LatentImage/i.test(ct)){
+            set('width','%width%');
+            set('height','%height%');
+            set('batch_size','%batch_size%');
+            return;
+        }
+
+        // Sampler/Scheduler selector nodes used by Custom Advanced / Flux setups
+        if(/^KSamplerSelect/i.test(ct)){ set('sampler_name','%sampler%'); return; }
+        if(/^BasicScheduler/i.test(ct)||/^SDTurboScheduler/i.test(ct)||/^AlignYourStepsScheduler/i.test(ct)){
+            set('scheduler','%scheduler%');
+            set('steps','%steps%');
+            set('denoise','%denoise%');
+            return;
+        }
+        if(/^RandomNoise/i.test(ct)){ set('noise_seed','%seed%'); return; }
+        if(/^FluxGuidance/i.test(ct)){ set('guidance','%cfg%'); return; }
+    });
+
+    // Pretty-print so the textarea is readable
+    return { json: JSON.stringify(obj,null,2), report: report };
+}
+
 /* ============ FILL WORKFLOW ============ */
 function doFillWorkflow(tplStr,promptText,negText,preset,avatarMap,detectedChars,overrideWH){
     var sd=extension_settings.sd||{},p=preset||{};var t=typeof tplStr==='string'?tplStr:JSON.stringify(tplStr);
     function v(pv,k1,k2,def){if(pv)return pv;if(k1&&sd[k1])return sd[k1];if(k2&&sd[k2])return sd[k2];return def||'';}
-    var strMap={'%prompt%':escJ(promptText),'%negative_prompt%':escJ(negText),'%model%':escJ(v(p.model,'comfy_model','model','')),'%vae%':escJ(v(p.vae,'comfy_vae','vae','')),'%vae_name%':escJ(v(p.vae,'comfy_vae','vae','')),'%sampler%':escJ(v(p.sampler,'comfy_sampler','sampler','euler')),'%scheduler%':escJ(v(p.scheduler,'comfy_scheduler','scheduler','normal')),'%clip_name%':escJ(sd.comfy_clip||''),'%clip_name1%':escJ(sd.comfy_clip1||sd.comfy_clip||''),'%clip_name2%':escJ(sd.comfy_clip2||'')};
+    var strMap={'%prompt%':escJ(promptText),'%negative_prompt%':escJ(negText),'%model%':escJ(v(p.model,'comfy_model','model','')),'%vae%':escJ(v(p.vae,'comfy_vae','vae','')),'%vae_name%':escJ(v(p.vae,'comfy_vae','vae','')),'%sampler%':escJ(v(p.sampler,'comfy_sampler','sampler','euler')),'%scheduler%':escJ(v(p.scheduler,'comfy_scheduler','scheduler','normal')),'%clip_name%':escJ(v(p.clipName,'comfy_clip','clip','')),'%clip_name1%':escJ(p.clipName1||sd.comfy_clip1||p.clipName||sd.comfy_clip||''),'%clip_name2%':escJ(p.clipName2||sd.comfy_clip2||'')};
     strMap['%user_avatar%']=(avatarMap&&avatarMap['__user__'])||BLANK_PNG;
     var mainCharB64=BLANK_PNG;if(avatarMap){for(var nm in avatarMap){if(nm!=='__user__'&&avatarMap[nm]){mainCharB64=avatarMap[nm];break;}}}strMap['%char_avatar%']=mainCharB64;
     if(avatarMap){for(var nm2 in avatarMap){if(nm2==='__user__')continue;strMap['%avatar_'+nm2+'%']=avatarMap[nm2]||BLANK_PNG;}}
     var dc=detectedChars||[];for(var ai=0;ai<8;ai++){var ph='%avatar_'+(ai+1)+'%';var cn=dc[ai];var ab=(cn&&avatarMap&&avatarMap[cn])||BLANK_PNG;if((!cn||!avatarMap||!avatarMap[cn])&&t.indexOf(ph)>=0)console.log(L,'Slot',ph,'→ BLANK');strMap[ph]=ab;}
     var useW=(overrideWH&&overrideWH.w)||p.width||1024,useH=(overrideWH&&overrideWH.h)||p.height||768;
-    var numMap={'%width%':useW,'%height%':useH,'%seed%':Math.floor(Math.random()*2147483647),'%steps%':(p.steps||0)||sd.comfy_steps||sd.steps||20,'%cfg%':(p.cfg||0)||sd.comfy_cfg||sd.scale||7,'%scale%':(p.cfg||0)||sd.comfy_cfg||sd.scale||7,'%denoise%':(p.denoise!==undefined&&p.denoise!==null)?p.denoise:1,'%clip_skip%':(p.clipSkip||0)||sd.comfy_clip_skip||sd.clip_skip||1,'%batch%':1,'%batch_size%':1};
+    var fixedSeed=(p.seed!==undefined&&p.seed!==null&&parseInt(p.seed)>0)?parseInt(p.seed):null;
+    var useBatch=(p.batchSize&&parseInt(p.batchSize)>0)?parseInt(p.batchSize):1;
+    var numMap={'%width%':useW,'%height%':useH,'%seed%':fixedSeed!==null?fixedSeed:Math.floor(Math.random()*2147483647),'%steps%':(p.steps||0)||sd.comfy_steps||sd.steps||20,'%cfg%':(p.cfg||0)||sd.comfy_cfg||sd.scale||7,'%scale%':(p.cfg||0)||sd.comfy_cfg||sd.scale||7,'%denoise%':(p.denoise!==undefined&&p.denoise!==null)?p.denoise:1,'%clip_skip%':(p.clipSkip||0)||sd.comfy_clip_skip||sd.clip_skip||1,'%batch%':useBatch,'%batch_size%':useBatch};
     var key;for(key in strMap)if(strMap.hasOwnProperty(key))t=t.split(key).join(strMap[key]);
     for(key in numMap)if(numMap.hasOwnProperty(key)){var val=String(numMap[key]);t=t.split('"'+key+'"').join(val);t=t.split(key).join(val);}
     try{return JSON.parse(t);}catch(e){console.error(L,'Workflow JSON error:',e.message);return null;}
@@ -675,16 +836,29 @@ function buildUI(){
         '<div style="display:flex;gap:8px"><div style="flex:1"><label>Width:</label><input id="ai_w" type="number" class="text_pole" min="256" max="2048" step="64"/></div><div style="flex:1"><label>Height:</label><input id="ai_h" type="number" class="text_pole" min="256" max="2048" step="64"/></div><div><label>&nbsp;</label><div id="ai_res_apply" class="menu_button" style="font-size:.78em">📐</div></div></div>'+
         '<div class="ai-sg"><label>Negative:</label><textarea id="ai_neg" class="text_pole" rows="2"></textarea></div>'+
         '<div class="ai-sg"><label>Custom LLM Instructions:</label><textarea id="ai_custom_instr" class="text_pole" rows="2"></textarea></div>'+
-        '<div class="ai-sg"><label>ComfyUI Workflow (API JSON):</label><textarea id="ai_wf_json" class="text_pole" rows="5" placeholder="%avatar_1% %avatar_2% %char_avatar% %user_avatar% %prompt%"></textarea>'+
-        '<small class="ai-desc">Placeholders: <code>%char_avatar%</code> <code>%user_avatar%</code> <code>%avatar_1%</code>…<code>%avatar_8%</code> <code>%avatar_Name%</code></small></div>'+
+        '<div class="ai-sg"><label>ComfyUI Workflow (API JSON):</label>'+
+        '<div style="display:flex;gap:4px;margin-bottom:4px;flex-wrap:wrap">'+
+        '<div id="ai_wf_load" class="menu_button" style="font-size:.78em" title="Load workflow JSON from a ComfyUI API-format file">📂 Load JSON…</div>'+
+        '<div id="ai_wf_autoph_basic" class="menu_button" style="font-size:.78em" title="Replace only essential fields: %prompt%, %negative_prompt%, %width%, %height%, %seed%. Leaves model, sampler, scheduler, steps, cfg, denoise, CLIPs etc. as they are in the source workflow.">🎯 Auto: Basic</div>'+
+        '<div id="ai_wf_autoph" class="menu_button" style="font-size:.78em" title="Replace every recognised field: prompts, model, VAE, CLIPs, sampler, scheduler, steps, cfg, denoise, seed, dimensions, batch, clip_skip">✨ Auto: All</div>'+
+        '<input id="ai_wf_file" type="file" accept=".json,application/json" style="display:none"/>'+
+        '<small id="ai_wf_status" style="color:#888;align-self:center;font-size:.78em;margin-left:4px"></small>'+
+        '</div>'+
+        '<textarea id="ai_wf_json" class="text_pole" rows="5" placeholder="%avatar_1% %avatar_2% %char_avatar% %user_avatar% %prompt%"></textarea>'+
+        '<div style="display:flex;gap:4px;margin-top:3px;align-items:center;flex-wrap:wrap">'+
+        '<div id="ai_wf_show_ph" class="menu_button" style="font-size:.78em" title="Open a floating, draggable widget with all placeholders. Click to open or close — drag the header to move it aside while editing.">ℹ️ Placeholders</div>'+
+        '<small class="ai-desc" style="margin:0;flex:1;min-width:0">Click for the full list — text, numeric, avatars &amp; per-character slots.</small>'+
+        '</div></div>'+
         '<hr class="sysHR"/>'+
         '<div class="ai-sg"><label><b>⚙️ Generation Params</b></label>'+
         '<div id="ai_refresh_opts" class="menu_button" style="font-size:.78em;margin-bottom:4px">🔄 Load from ComfyUI</div>'+
         '<div style="display:flex;gap:6px;flex-wrap:wrap"><div style="flex:2;min-width:120px"><label style="font-size:.8em">Model:</label><input id="ai_p_model" class="text_pole" list="ai_dl_models" style="font-size:.85em"/></div><div style="flex:1;min-width:80px"><label style="font-size:.8em">VAE:</label><input id="ai_p_vae" class="text_pole" list="ai_dl_vaes" style="font-size:.85em"/></div></div>'+
         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><div style="flex:1"><label style="font-size:.8em">Sampler:</label><input id="ai_p_sampler" class="text_pole" list="ai_dl_samplers" style="font-size:.85em"/></div><div style="flex:1"><label style="font-size:.8em">Scheduler:</label><input id="ai_p_scheduler" class="text_pole" list="ai_dl_schedulers" style="font-size:.85em"/></div></div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><div style="flex:1;min-width:100px" title="%clip_name% — for single-CLIP loaders (SD1.5, SDXL)"><label style="font-size:.8em">CLIP:</label><input id="ai_p_clip" class="text_pole" list="ai_dl_clips" placeholder="auto" style="font-size:.85em"/></div><div style="flex:1;min-width:100px" title="%clip_name1% — first CLIP for DualCLIPLoader (Flux/SD3, e.g. t5xxl)"><label style="font-size:.8em">CLIP 1:</label><input id="ai_p_clip1" class="text_pole" list="ai_dl_clips" placeholder="auto" style="font-size:.85em"/></div><div style="flex:1;min-width:100px" title="%clip_name2% — second CLIP for DualCLIPLoader (Flux/SD3, e.g. clip_l)"><label style="font-size:.8em">CLIP 2:</label><input id="ai_p_clip2" class="text_pole" list="ai_dl_clips" placeholder="auto" style="font-size:.85em"/></div></div>'+
         '<div style="margin-top:6px;padding:6px;background:rgba(99,102,241,0.08);border-radius:6px"><label style="font-size:.82em"><b>🔮 Always-On LoRAs</b></label><div id="ai_aon_list"></div>'+
         '<div style="display:flex;gap:4px;margin-top:4px;align-items:center"><input id="ai_aon_lora_input" class="text_pole" list="ai_dl_loras" placeholder="LoRA…" style="flex:2;font-size:.85em"/><input id="ai_aon_trigger_input" class="text_pole" placeholder="trigger" style="flex:1;font-size:.85em"/><input id="ai_aon_weight_input" type="number" step="0.05" min="0" max="2" value="0.8" class="text_pole" style="width:55px;font-size:.85em"/><div id="ai_aon_add" class="menu_button" style="font-size:.78em">➕</div></div></div>'+
-        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><div style="flex:1"><label style="font-size:.8em">Steps:</label><input id="ai_p_steps" type="number" class="text_pole" style="font-size:.85em"/></div><div style="flex:1"><label style="font-size:.8em">CFG:</label><input id="ai_p_cfg" type="number" step="0.5" class="text_pole" style="font-size:.85em"/></div><div style="flex:1"><label style="font-size:.8em">Denoise:</label><input id="ai_p_denoise" type="number" step="0.05" class="text_pole" style="font-size:.85em"/></div><div style="flex:1"><label style="font-size:.8em">CLIP:</label><input id="ai_p_clipskip" type="number" class="text_pole" style="font-size:.85em"/></div></div></div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><div style="flex:1;min-width:60px"><label style="font-size:.8em">Steps:</label><input id="ai_p_steps" type="number" class="text_pole" style="font-size:.85em"/></div><div style="flex:1;min-width:60px"><label style="font-size:.8em">CFG:</label><input id="ai_p_cfg" type="number" step="0.5" class="text_pole" style="font-size:.85em"/></div><div style="flex:1;min-width:60px"><label style="font-size:.8em">Denoise:</label><input id="ai_p_denoise" type="number" step="0.05" class="text_pole" style="font-size:.85em"/></div><div style="flex:1;min-width:60px" title="CLIP skip — value used for %clip_skip% and CLIPSetLastLayer.stop_at_clip_layer"><label style="font-size:.8em">CLIP skip:</label><input id="ai_p_clipskip" type="number" class="text_pole" style="font-size:.85em"/></div></div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><div style="flex:2;min-width:120px" title="%seed% — set 0 (or empty) for a random seed every generation, otherwise this fixed value is used"><label style="font-size:.8em">Seed (0 = random):</label><input id="ai_p_seed" type="number" min="0" step="1" class="text_pole" style="font-size:.85em" placeholder="0"/></div><div style="flex:1;min-width:60px" title="%batch% / %batch_size%"><label style="font-size:.8em">Batch:</label><input id="ai_p_batch" type="number" min="1" max="16" step="1" class="text_pole" style="font-size:.85em" placeholder="1"/></div></div></div>'+
         '<hr class="sysHR"/>'+
         '<div class="ai-sg"><label><b>🔮 LoRA Auto-Select</b></label><label class="checkbox_label"><input id="ai_lora_on" type="checkbox"/><span>Enable</span></label>'+
         '<div id="ai_lora_opts"><div style="display:flex;gap:6px;align-items:center;margin:4px 0"><label style="font-size:.82em">Max:</label><input id="ai_lora_max" type="number" min="1" max="5" class="text_pole" style="width:50px;font-size:.85em"/><div id="ai_lora_fetch" class="menu_button" style="font-size:.76em">🔄 Fetch</div></div>'+
@@ -709,6 +883,231 @@ function buildUI(){
 function settingsToUI(){var s=S();$('#ai_on').prop('checked',s.enabled);$('#ai_auto').prop('checked',s.autoGenerate);$('#ai_cnt').val(s.imagesPerMessage);$('#ai_cnt_v').text(s.imagesPerMessage);$('#ai_direct').prop('checked',s.preferDirectComfy);$('#ai_comp').prop('checked',s.compressImages);$('#ai_galbtn').prop('checked',s.showGalleryButton);$('#ai_hide_prompts').prop('checked',!!s.hidePrompts);$('#ai_gal_pos').val(s.galleryPosition||'mid-right');$('#ai_msg_pos').val(s.msgBtnPosition||'bottom-right');$('#ai_comfy_url').val(s.comfyUrl||'');rebuildPresetDD();loadPresetToUI();toggleGalBtn();applyHidePrompts();}
 
 function applyHidePrompts(){$('.ai-illustration-wrapper').toggleClass('ai-hide-caption',!!S().hidePrompts);}
+
+/* ============ PLACEHOLDER REFERENCE FLOATING WIDGET ============ */
+/**
+ * Toggle a floating, draggable widget listing every placeholder this extension
+ * recognises, grouped by category. Unlike a modal, it does NOT block the page —
+ * the user can drag it aside, keep it open, and copy placeholders into the
+ * workflow textarea while editing.
+ *
+ * State persisted to localStorage:
+ *   - ai_ph_widget_pos:        { left, top }
+ *   - ai_ph_widget_collapsed:  boolean
+ *
+ * Avatar slots are populated dynamically from the current chat when possible.
+ */
+var PH_WIDGET_ID='ai_ph_widget';
+var PH_POS_KEY='ai_ph_widget_pos';
+var PH_COLLAPSED_KEY='ai_ph_widget_collapsed';
+
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+function togglePlaceholderWidget(){
+    var existing=document.getElementById(PH_WIDGET_ID);
+    if(existing){ existing.remove(); return; }
+
+    // Try to discover named avatar slots from the current chat context
+    var namedAvatars=[];
+    try{
+        var ctx=getContext();
+        var seen={};
+        (ctx.chat||[]).forEach(function(m){
+            if(!m||m.is_user||m.is_system) return;
+            var n=m.name||m.original_name;
+            if(n&&!seen[n]){ seen[n]=true; namedAvatars.push(n); }
+        });
+    }catch(e){}
+
+    var groups=[
+        { title:'📝 Prompts (text)', items:[
+            ['%prompt%','Positive prompt for the current scene'],
+            ['%negative_prompt%','Negative prompt (preset → Negative field)']
+        ]},
+        { title:'🧠 Model / Loaders (text)', items:[
+            ['%model%','Checkpoint or UNET filename'],
+            ['%vae%','VAE filename'],
+            ['%vae_name%','Alias for %vae%'],
+            ['%clip_name%','CLIP filename for single-CLIP loaders'],
+            ['%clip_name1%','First CLIP for DualCLIPLoader (e.g. t5xxl)'],
+            ['%clip_name2%','Second CLIP for DualCLIPLoader (e.g. clip_l)']
+        ]},
+        { title:'⚙️ Sampling (text)', items:[
+            ['%sampler%','Sampler name (e.g. euler, dpmpp_2m)'],
+            ['%scheduler%','Scheduler name (e.g. normal, karras, simple)']
+        ]},
+        { title:'🔢 Numeric', items:[
+            ['%width%','Image width — adaptive aspect may override per scene'],
+            ['%height%','Image height — adaptive aspect may override per scene'],
+            ['%seed%','Random seed each call, unless Seed field is > 0'],
+            ['%steps%','Sampler steps'],
+            ['%cfg%','CFG / guidance value'],
+            ['%scale%','Alias for %cfg%'],
+            ['%denoise%','Denoise strength (0–1)'],
+            ['%clip_skip%','CLIP skip layer value'],
+            ['%batch%','Batch count (alias)'],
+            ['%batch_size%','Batch size']
+        ]},
+        { title:'🖼️ Avatars (base64, for image-to-image / character routing)', items:[
+            ['%char_avatar%','Main detected character avatar (first non-user)'],
+            ['%user_avatar%','User\'s persona avatar'],
+            ['%avatar_1%','Detected character slot 1'],
+            ['%avatar_2%','Detected character slot 2'],
+            ['%avatar_3%','Detected character slot 3'],
+            ['%avatar_4%','Detected character slot 4'],
+            ['%avatar_5%','Detected character slot 5'],
+            ['%avatar_6%','Detected character slot 6'],
+            ['%avatar_7%','Detected character slot 7'],
+            ['%avatar_8%','Detected character slot 8']
+        ]}
+    ];
+    if(namedAvatars.length){
+        groups.push({
+            title:'👤 Named avatars detected in this chat',
+            items: namedAvatars.map(function(n){
+                return ['%avatar_'+n+'%','Avatar for "'+n+'" (by character name)'];
+            })
+        });
+    } else {
+        groups.push({
+            title:'👤 Named avatars',
+            items:[
+                ['%avatar_CharacterName%','Replace CharacterName with the exact display name of any character in the chat']
+            ]
+        });
+    }
+
+    var html='<div id="'+PH_WIDGET_ID+'" class="ai-ph-widget">'+
+        '<div class="ai-ph-w-header" title="Drag to move">'+
+            '<span class="ai-ph-w-grip">⋮⋮</span>'+
+            '<b class="ai-ph-w-title">📋 Placeholders</b>'+
+            '<span class="ai-ph-w-spacer"></span>'+
+            '<span class="ai-ph-w-collapse" title="Collapse / expand">–</span>'+
+            '<span class="ai-ph-w-close" title="Close">✕</span>'+
+        '</div>'+
+        '<div class="ai-ph-w-body">'+
+            '<div class="ai-ph-w-hint">Click any pill to copy it, then paste into the workflow.</div>';
+    groups.forEach(function(g){
+        html+='<div class="ai-ph-group"><div class="ai-ph-group-title">'+esc(g.title)+'</div><div class="ai-ph-list">';
+        g.items.forEach(function(it){
+            var ph=it[0],desc=it[1];
+            html+='<div class="ai-ph-row"><code class="ai-ph-pill" data-ph="'+esc(ph)+'" title="Click to copy">'+esc(ph)+'</code>'+
+                  '<span class="ai-ph-desc">'+esc(desc)+'</span></div>';
+        });
+        html+='</div></div>';
+    });
+    html+='</div></div>';
+
+    var $w=$(html);
+    $('body').append($w);
+    var widget=$w[0];
+
+    // Restore saved position, clamping to viewport so it can't be off-screen
+    var saved=null;
+    try{ saved=JSON.parse(lsGet(PH_POS_KEY)||'null'); }catch(e){}
+    var defaultLeft=Math.max(20,window.innerWidth-440);
+    var defaultTop=80;
+    var left=saved&&typeof saved.left==='number'?saved.left:defaultLeft;
+    var top=saved&&typeof saved.top==='number'?saved.top:defaultTop;
+    // Clamp into viewport (use widget's approximate width — measure after attach)
+    var W=widget.offsetWidth||420, H=widget.offsetHeight||500;
+    left=Math.min(Math.max(0,left), Math.max(0,window.innerWidth-W));
+    top=Math.min(Math.max(0,top), Math.max(0,window.innerHeight-Math.min(H,80)));
+    widget.style.left=left+'px';
+    widget.style.top=top+'px';
+
+    // Restore collapsed state
+    if(lsGet(PH_COLLAPSED_KEY)==='1') $w.addClass('ai-ph-w-collapsed');
+
+    // Close button
+    $w.find('.ai-ph-w-close').on('click',function(e){ e.stopPropagation(); $w.remove(); });
+
+    // Collapse toggle
+    $w.find('.ai-ph-w-collapse').on('click',function(e){
+        e.stopPropagation();
+        $w.toggleClass('ai-ph-w-collapsed');
+        lsSet(PH_COLLAPSED_KEY, $w.hasClass('ai-ph-w-collapsed')?'1':'0');
+    });
+
+    // Click-to-copy on pills (don't initiate drag from these)
+    $w.find('.ai-ph-pill').on('mousedown touchstart',function(e){ e.stopPropagation(); });
+    $w.find('.ai-ph-pill').on('click',function(e){
+        e.stopPropagation();
+        var ph=$(this).data('ph');
+        var el=this;
+        function flash(){ $(el).addClass('ai-ph-copied'); setTimeout(function(){ $(el).removeClass('ai-ph-copied'); },800); }
+        try{
+            if(navigator.clipboard&&navigator.clipboard.writeText){
+                navigator.clipboard.writeText(ph).then(flash,function(){ flash(); });
+            } else {
+                var ta=document.createElement('textarea');
+                ta.value=ph; document.body.appendChild(ta); ta.select();
+                try{ document.execCommand('copy'); }catch(e2){}
+                document.body.removeChild(ta); flash();
+            }
+        }catch(e3){ flash(); }
+    });
+
+    // Drag handling — works on mouse and touch
+    var dragging=false,dx=0,dy=0;
+    var header=$w.find('.ai-ph-w-header')[0];
+
+    function onDown(ev){
+        // Ignore drags initiated on the close/collapse controls
+        var t=ev.target;
+        if($(t).closest('.ai-ph-w-close,.ai-ph-w-collapse').length) return;
+        dragging=true;
+        var p=ev.touches?ev.touches[0]:ev;
+        var r=widget.getBoundingClientRect();
+        dx=p.clientX-r.left;
+        dy=p.clientY-r.top;
+        widget.classList.add('ai-ph-w-dragging');
+        ev.preventDefault();
+    }
+    function onMove(ev){
+        if(!dragging) return;
+        var p=ev.touches?ev.touches[0]:ev;
+        var nl=p.clientX-dx;
+        var nt=p.clientY-dy;
+        // Keep at least 40px of the header on-screen so user can always grab it back
+        var ww=widget.offsetWidth, hh=widget.offsetHeight;
+        nl=Math.min(Math.max(-ww+40, nl), window.innerWidth-40);
+        nt=Math.min(Math.max(0, nt), window.innerHeight-30);
+        widget.style.left=nl+'px';
+        widget.style.top=nt+'px';
+        if(ev.cancelable) ev.preventDefault();
+    }
+    function onUp(){
+        if(!dragging) return;
+        dragging=false;
+        widget.classList.remove('ai-ph-w-dragging');
+        // Persist position
+        var r=widget.getBoundingClientRect();
+        lsSet(PH_POS_KEY, JSON.stringify({ left:Math.round(r.left), top:Math.round(r.top) }));
+    }
+
+    header.addEventListener('mousedown',onDown);
+    header.addEventListener('touchstart',onDown,{passive:false});
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('mouseup',onUp);
+    document.addEventListener('touchend',onUp);
+    document.addEventListener('touchcancel',onUp);
+
+    // Detach global listeners when widget is removed (avoid leaks across open/close)
+    var mo=new MutationObserver(function(){
+        if(!document.body.contains(widget)){
+            document.removeEventListener('mousemove',onMove);
+            document.removeEventListener('touchmove',onMove);
+            document.removeEventListener('mouseup',onUp);
+            document.removeEventListener('touchend',onUp);
+            document.removeEventListener('touchcancel',onUp);
+            mo.disconnect();
+        }
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+}
 
 function bindUI(){
     var s=S();
@@ -735,13 +1134,85 @@ function bindUI(){
     var as=function(){syncUIToPreset();};
     $('#ai_prompt_fmt').on('change',function(){var k=$(this).val(),f=FORMATS[k];if(f){$('#ai_w').val(f.w);$('#ai_h').val(f.h);}updateFmtInfo();syncUIToPreset();});
     $('#ai_res_apply').on('click',function(){var k=$('#ai_prompt_fmt').val(),f=FORMATS[k];if(f){$('#ai_w').val(f.w);$('#ai_h').val(f.h);syncUIToPreset();}});
-    $('#ai_w,#ai_h,#ai_p_model,#ai_p_vae,#ai_p_sampler,#ai_p_scheduler,#ai_p_steps,#ai_p_cfg,#ai_p_denoise,#ai_p_clipskip').on('change',as);
+    $('#ai_w,#ai_h,#ai_p_model,#ai_p_vae,#ai_p_sampler,#ai_p_scheduler,#ai_p_steps,#ai_p_cfg,#ai_p_denoise,#ai_p_clipskip,#ai_p_clip,#ai_p_clip1,#ai_p_clip2,#ai_p_seed,#ai_p_batch').on('change',as);
     $('#ai_neg,#ai_custom_instr,#ai_wf_json').on('change',as);
     $('#ai_char_route').on('change',function(){syncUIToPreset();$('#ai_route_opts').toggle($(this).prop('checked'));});
     $('#ai_char_preset,#ai_adapt,#ai_char_desc').on('change',as);
     $('#ai_lora_on').on('change',function(){syncUIToPreset();$('#ai_lora_opts').toggle($(this).prop('checked'));});
     $('#ai_lora_max,#ai_lora_lib').on('change',as);
     $('#ai_lora_fetch').on('click',onFetchLoras);$('#ai_refresh_opts').on('click',refreshComfyDropdowns);
+
+    // Load workflow JSON from a file
+    $('#ai_wf_load').on('click',function(){$('#ai_wf_file').trigger('click');});
+    $('#ai_wf_show_ph').on('click',togglePlaceholderWidget);
+    $('#ai_wf_file').on('change',function(e){
+        var file=e.target.files&&e.target.files[0]; if(!file) return;
+        var status=$('#ai_wf_status');
+        status.text('Reading…').css('color','#f59e0b');
+        var reader=new FileReader();
+        reader.onload=function(ev){
+            var text=ev.target.result||'';
+            try{
+                // Validate JSON and warn if it looks like the UI-format
+                var parsed=JSON.parse(text);
+                var prettyStr;
+                var isApiFmt=parsed&&typeof parsed==='object'&&!Array.isArray(parsed)&&
+                    Object.keys(parsed).some(function(k){return parsed[k]&&parsed[k].class_type;});
+                if(!isApiFmt&&Array.isArray(parsed.nodes)){
+                    status.text('⚠ UI format — use "Save (API Format)" in ComfyUI').css('color','#ef4444');
+                    toastr.warning('This file is the ComfyUI UI workflow format. In ComfyUI, enable "Dev mode" in settings, then use "Save (API Format)" to export a workflow this extension can use.','AutoIllustrator',{timeOut:10000});
+                    // Still drop the raw text into the textarea so the user can inspect it
+                    prettyStr=JSON.stringify(parsed,null,2);
+                } else {
+                    prettyStr=JSON.stringify(parsed,null,2);
+                    status.text('✅ Loaded '+file.name+' ('+Object.keys(parsed).length+' nodes)').css('color','#22c55e');
+                }
+                $('#ai_wf_json').val(prettyStr);
+                syncUIToPreset();
+            }catch(err){
+                status.text('❌ '+err.message).css('color','#ef4444');
+                toastr.error('Could not parse JSON: '+err.message,'AutoIllustrator');
+            }
+            // Reset input so loading the same file twice still triggers change
+            $('#ai_wf_file').val('');
+        };
+        reader.onerror=function(){
+            status.text('❌ Read failed').css('color','#ef4444');
+        };
+        reader.readAsText(file);
+    });
+
+    // Auto-place %placeholders% by detecting known ComfyUI node classes.
+    // 'basic' replaces only %prompt%, %negative_prompt%, %width%, %height%, %seed%.
+    // 'all' replaces every recognised field.
+    function runAutoPlaceholders(mode){
+        var current=$('#ai_wf_json').val()||'';
+        var status=$('#ai_wf_status');
+        var label=mode==='basic'?'Basic':'All';
+        if(!current.trim()){
+            status.text('No workflow loaded').css('color','#ef4444');
+            toastr.warning('Load a workflow JSON first.','AutoIllustrator');
+            return;
+        }
+        try{
+            var result=autoPlaceholderWorkflow(current, mode);
+            $('#ai_wf_json').val(result.json);
+            syncUIToPreset();
+            if(result.report.length){
+                status.text('✅ '+label+': '+result.report.length+' placeholder'+(result.report.length===1?'':'s')+' applied').css('color','#22c55e');
+                console.log(L,'Auto-placeholder ('+mode+') changes:\n'+result.report.join('\n'));
+                toastr.success(label+' — '+result.report.length+' field'+(result.report.length===1?'':'s')+' replaced. See console for details.','AutoIllustrator',{timeOut:6000});
+            } else {
+                status.text(label+': no replaceable fields found').css('color','#f59e0b');
+                toastr.info('No replaceable inputs detected for '+label+' mode — workflow may already use placeholders, or its node types are not recognised.','AutoIllustrator');
+            }
+        }catch(err){
+            status.text('❌ '+err.message).css('color','#ef4444');
+            toastr.error(err.message,'AutoIllustrator',{timeOut:10000});
+        }
+    }
+    $('#ai_wf_autoph').on('click',function(){ runAutoPlaceholders('all'); });
+    $('#ai_wf_autoph_basic').on('click',function(){ runAutoPlaceholders('basic'); });
 
     $('#ai_aon_add').on('click',function(){var f=$('#ai_aon_lora_input').val().trim(),t=$('#ai_aon_trigger_input').val().trim(),w=parseFloat($('#ai_aon_weight_input').val())||0.8;if(!f)return;addAlwaysOnLora(f,t,w);$('#ai_aon_lora_input').val('');$('#ai_aon_trigger_input').val('');$('#ai_aon_weight_input').val('0.8');});
     $(document).on('click','.ai-aon-remove',function(){removeAlwaysOnLora(parseInt($(this).data('idx')));});
@@ -791,7 +1262,7 @@ jQuery(async function(){
     toggleGalBtn();reRenderAll();
     var chatEl=document.getElementById('chat');
     if(chatEl){var t=null;new MutationObserver(function(){setTimeout(injectMsgButtons,300);if(t)clearTimeout(t);t=setTimeout(checkMissing,800);}).observe(chatEl,{childList:true,subtree:true});}
-    setTimeout(function(){injectMsgButtons();fetchComfyOptions().then(function(o){populateDatalist('ai_dl_models',o.models);populateDatalist('ai_dl_samplers',o.samplers);populateDatalist('ai_dl_schedulers',o.schedulers);populateDatalist('ai_dl_vaes',o.vaes);populateDatalist('ai_dl_loras',o.loras);});},2000);
+    setTimeout(function(){injectMsgButtons();fetchComfyOptions().then(function(o){populateDatalist('ai_dl_models',o.models);populateDatalist('ai_dl_samplers',o.samplers);populateDatalist('ai_dl_schedulers',o.schedulers);populateDatalist('ai_dl_vaes',o.vaes);populateDatalist('ai_dl_loras',o.loras);populateDatalist('ai_dl_clips',o.clips||[]);});},2000);
     setInterval(checkMissing,5000);
     console.log(L,'v3.3 loaded — gallery delete + masonry + POV');
 });
