@@ -1,5 +1,5 @@
 /**
- * AutoIllustrator v3.25.1
+ * AutoIllustrator v3.25.2
  *  - The face of the moment: the Gemini and GPT prompt formats (and their POV
  *    pairs) ask for each character's expression derived from the text and
  *    described physically (mouth, brows, eyes), with "not smiling" unless the
@@ -94,7 +94,7 @@ import { extension_settings, getContext } from '../../../extensions.js';
 
 var M = 'auto_illustrator';
 var L = '[AutoIllustrator]';
-var AI_VERSION = '3.25.1';
+var AI_VERSION = '3.25.2';
 
 function aiSlayOwnsScreen() {
     try {
@@ -281,7 +281,47 @@ function rebuildCharPresetDD(){var sel=$('#ai_char_preset');sel.empty();sel.appe
 /* ============ UTIL ============ */
 function esc(t){if(!t)return'';var e=document.createElement('span');e.textContent=t;return e.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function escJ(s){if(!s)return'';return s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t').replace(/[\x00-\x1f]/g,'');}
-function extractJSON(t){if(!t)return null;var c=t.replace(/```(?:json)?\s*/gi,'').replace(/```/g,'');var f=c.indexOf('{'),l=c.lastIndexOf('}');if(f<0||l<=f)return null;var j=c.substring(f,l+1).replace(/,\s*([}\]])/g,'$1');try{return JSON.parse(j);}catch(e){}try{return JSON.parse(j.replace(/'/g,'"'));}catch(e){}return null;}
+function extractJSON(t){if(!t)return null;var c=t.replace(/```(?:json)?\s*/gi,'').replace(/```/g,'');var f=c.indexOf('{'),l=c.lastIndexOf('}');if(f<0||l<=f)return null;var j=c.substring(f,l+1).replace(/,\s*([}\]])/g,'$1');try{return JSON.parse(j);}catch(e){}try{return JSON.parse(repairJSONQuotes(j));}catch(e){}try{return JSON.parse(j.replace(/'/g,'"'));}catch(e){}return null;}
+/* v3.25.2: models copy roleplay text into "text" with its dialogue quotes
+   unescaped ("text":"*smiles* "Hello," she said"), and web bridges that read
+   the rendered page lose the backslash of \" even when the model wrote it.
+   One stray quote made every message with dialogue fail as "could not split".
+   Walk the JSON and keep a quote as the closing one only where JSON structure
+   follows it (":" after a key; "," + next key, "}" or "]" after a value);
+   every other quote inside a string is escaped. Raw newlines/tabs in strings
+   are escaped too. Used only after a plain JSON.parse has failed. */
+function repairJSONQuotes(s){
+    var out='',stack=[],inStr=false,isKey=false,last='',i,ch;
+    function closes(j){
+        var r=s.substr(j,120).replace(/^\s+/,''),c=r.charAt(0),top=stack[stack.length-1];
+        if(!c)return true;
+        if(isKey)return c===':';
+        if(c==='}'||c===']')return true;
+        if(c===','){
+            var r2=r.slice(1).replace(/^\s+/,'');
+            if(top==='[')return /^["{\[\d\-tfn]/.test(r2);
+            return /^"[A-Za-z_][\w ]{0,40}"\s*:/.test(r2)||/^[}\]]/.test(r2);
+        }
+        return false;
+    }
+    for(i=0;i<s.length;i++){
+        ch=s.charAt(i);
+        if(!inStr){
+            if(ch==='"'){inStr=true;isKey=stack[stack.length-1]==='{'&&(last==='{'||last===',');}
+            else if(ch==='{'||ch==='[')stack.push(ch);
+            else if(ch==='}'||ch===']')stack.pop();
+            if(!/\s/.test(ch))last=ch;
+            out+=ch;continue;
+        }
+        if(ch==='\\'){out+=ch+s.charAt(i+1);i++;continue;}
+        if(ch==='\n'){out+='\\n';continue;}
+        if(ch==='\r')continue;
+        if(ch==='\t'){out+='\\t';continue;}
+        if(ch==='"'){if(closes(i+1)){inStr=false;last='"';out+=ch;}else out+='\\"';continue;}
+        out+=ch;
+    }
+    return out;
+}
 function compressImage(b64,maxW,q){maxW=maxW||1024;q=q||0.82;return new Promise(function(resolve){var img=new Image();img.onload=function(){var w=img.width,h=img.height;if(w>maxW){var r=maxW/w;w=Math.round(w*r);h=Math.round(h*r);}var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',q).split(',')[1]);};img.onerror=function(){resolve(b64);};img.src=b64.startsWith('data:')?b64:'data:image/png;base64,'+b64;});}
 function b2b64(blob){return new Promise(function(res,rej){var r=new FileReader();r.onloadend=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(blob);});}
 
@@ -1095,7 +1135,9 @@ function buildPrompt(text,n,fmtKey,customInstr,charName,routing,adaptive,loraLib
 async function analyseMessage(text,n,fmtKey,customInstr,charName,routing,adaptive,loraLib,maxLoras,charDesc,charNames,loraStep){
     var prompt=buildPrompt(text,n,fmtKey,customInstr,charName,routing,adaptive,loraLib,maxLoras,charDesc,charNames,loraStep);
     var raw=null;try{raw=await generateQuietPrompt(prompt,false,false);}catch(e1){try{raw=await generateQuietPrompt(prompt,false,true);}catch(e2){toastr.error('LLM error.');return null;}}
-    if(!raw)return null;var parsed=extractJSON(raw);if(!parsed||!parsed.sections||!parsed.sections.length)return null;
+    if(!raw){console.warn(L,'Analysis: the LLM returned an empty reply.');return null;}
+    var parsed=extractJSON(raw);
+    if(!parsed||!parsed.sections||!parsed.sections.length){console.warn(L,'Analysis: no {"sections":[…]} in the LLM reply ('+raw.length+' chars):\n'+raw.substring(0,2000));return null;}
     var valid=parsed.sections.filter(function(s){return s&&typeof s.text==='string'&&typeof s.image_prompt==='string';});
     var pov=isPOVFormat(fmtKey);
     valid.forEach(function(s,i){var info=[];if(pov)info.push('POV');if(s.characters&&s.characters.length)info.push('chars=['+s.characters.join(',')+']');if(s.person_count)info.push('p='+s.person_count);if(s.has_char!==undefined)info.push('route='+(s.has_char?'CHAR':'env'));if(s.loras&&s.loras.length)info.push('lora=['+s.loras.map(function(x){return typeof x==='string'?x:((x.id||x.n||x.name||x.file||'?')+(x.w!==undefined?':'+x.w:''));}).join(',')+']');console.log(L,'Sec '+(i+1)+':',(info.length?info.join(' '):''),'→ "'+s.image_prompt.substring(0,80)+'…"');});
@@ -2809,7 +2851,7 @@ function buildUI(){
     var gpo='';for(var gk in POSITIONS)if(POSITIONS.hasOwnProperty(gk))gpo+='<option value="'+gk+'">'+esc(POSITIONS[gk].l)+'</option>';
     var mpo='';for(var mk in MSG_POSITIONS)if(MSG_POSITIONS.hasOwnProperty(mk))mpo+='<option value="'+mk+'">'+esc(MSG_POSITIONS[mk].l)+'</option>';
     return'<div id="auto_illustrator_settings"><div class="inline-drawer">'+
-        '<div class="inline-drawer-toggle inline-drawer-header"><b>🎨 AutoIllustrator v3.25.1</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div>'+
+        '<div class="inline-drawer-toggle inline-drawer-header"><b>🎨 AutoIllustrator v3.25.2</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div>'+
         '<div class="inline-drawer-content" style="display:none;">'+
         '<label class="checkbox_label"><input id="ai_on" type="checkbox"/><span>Enable</span></label>'+
         '<label class="checkbox_label"><input id="ai_auto" type="checkbox"/><span>Auto-generate</span></label>'+

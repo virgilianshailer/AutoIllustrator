@@ -354,6 +354,10 @@ Position and collapsed state are stored in `localStorage` under `ai_ph_widget_po
 **Images vanish or look low quality after reload**
 - Stored images are recompressed when **Compress** is on; lower the compression aggressiveness via the stored-width/quality defaults if needed
 
+**"The LLM could not split the text"**
+- The LLM reply had no readable `{"sections":[...]}` JSON. Open the browser console: the raw reply is logged after `Analysis: no {"sections":[…]}`
+- A short reply usually means the model refused or the bridge hiccuped. Clicking 🎨 again normally works
+
 **The placeholder widget appears off-screen**
 - It clamps itself to the viewport when it loads, but if it ever gets stuck, clear `ai_ph_widget_pos` from your browser's localStorage for the SillyTavern origin
 
@@ -363,7 +367,8 @@ Position and collapsed state are stored in `localStorage` under `ai_ph_widget_po
 
 | Version | Changes |
 |---|---|
-| 3.25.1 | Current release: web bridge presets (Gemini / ChatGPT) with avatar references, Hi-res download and cancel; "Continue from the previous picture"; storyboard sheets and panel analysis for LLM Tools; Krea 2, Gemini, GPT and Anima prompt formats |
+| 3.25.2 | Fix: "The LLM could not split the text" on messages with dialogue. Models (and web bridges that read the rendered page) often return the scene text with its quotes unescaped; the parser now repairs those quotes, and logs the raw reply to the console when no sections can be read |
+| 3.25.1 | Web bridge presets (Gemini / ChatGPT) with avatar references, Hi-res download and cancel; "Continue from the previous picture"; storyboard sheets and panel analysis for LLM Tools; Krea 2, Gemini, GPT and Anima prompt formats |
 | 1.5.0 | **🎯 Auto: Basic** mode (only essentials: prompt, negative, width, height, seed); placeholder reference reworked as a draggable floating widget with persistent position & collapsed state |
 | 1.4.0 | New preset overrides: **Seed** (0 = random), **Batch**, **CLIP / CLIP 1 / CLIP 2**; CLIP filenames auto-fetched from ComfyUI; placeholder modal (precursor to the widget) |
 | 1.3.0 | **📂 Load JSON…** workflow loader (with UI-format detection); **✨ Auto-Placeholders** scanner for KSampler / CLIPTextEncode / Checkpoint / VAE / Latent / DualCLIPLoader / Flux sampler nodes |
