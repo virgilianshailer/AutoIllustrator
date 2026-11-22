@@ -9,7 +9,7 @@ AutoIllustrator reads each character message, asks the LLM to split it into illu
 ## Features
 
 - **Automatic scene splitting** — after each message the LLM divides the text into N sections and writes a tailored image prompt for every one, so illustrations land beside the passage they illustrate rather than all at the end
-- **Per-model prompt formats** — built-in instruction templates for Flux, Flux 2 Klein, Z-Image, Qwen Image, SD 1.5, Illustrious, NoobAI, plus a free-form Custom mode; each carries sensible default resolution and negative prompts
+- **Per-model prompt formats** — built-in instruction templates for Flux, Flux 2 Klein, Krea 2, Gemini, GPT (ChatGPT image), Z-Image, Qwen Image, SD 1.5, Illustrious, NoobAI, Anima, plus a free-form Custom mode; each carries sensible default resolution and negative prompts
 - **👁️ First-person POV mode** — a parallel set of formats that frame every image through the viewer's own eyes: characters face the camera, the viewer's face/body is never drawn, hands appear only when interacting (`looking_at_viewer`, `pov_hands`, `from_above/below`, etc.)
 - **📂 Load workflow from file** — pick any ComfyUI **API-format** JSON straight from your filesystem; the file is parsed, pretty-printed and dropped into the active preset. UI-format files are detected and you're nudged to re-export as API format
 - **✨ Auto-placeholders** — analyse your loaded workflow and automatically replace known node inputs with the right `%placeholder%`. Two modes:
@@ -23,6 +23,9 @@ AutoIllustrator reads each character message, asks the LLM to split it into illu
 - **LoRA auto-select** — give the LLM a labelled LoRA library and let it pick 0–N LoRAs per scene; selected LoRAs are injected as real `LoraLoader` nodes chained into your workflow, with trigger words appended to the prompt
 - **Always-On LoRAs** — pin specific LoRAs (with trigger + weight) to every image in a preset
 - **Character card descriptions** — feeds each character's card description/personality to the LLM as a visual reference so appearance stays consistent across images
+- **🌐 Web bridge presets (Gemini / ChatGPT)** — a preset can draw through a local gemini-bridge instead of ComfyUI: the workflow is skipped, the LLM-written prompt goes to the bridge, scene avatars can be sent as appearance references, and a running request can be cancelled
+- **🎞 Continue from the previous picture** — optionally send the previous illustration as a reference so outfits, rooms and style carry over
+- **🧩 Storyboard API for other extensions** — `window.AutoIllustrator.illustrateStoryboard()` draws one multi-panel sheet per message and `analyzeStoryboardSheet()` locates the panels (used by LLM Tools Visual Novel Mode)
 - **Workflow presets** — save/load/duplicate/rename complete generation setups (workflow JSON, model, VAE, sampler, scheduler, steps, CFG, denoise, CLIP skip, CLIP files, seed, batch, format, LoRAs, routing)
 - **Custom ComfyUI workflows** — paste or load any ComfyUI **API-format** workflow JSON; template variables are substituted at generation time
 - **Persistent gallery** — every generated image is stored per-chat and survives reloads; a floating button opens a uniform grid with per-image and clear-all deletion
@@ -257,11 +260,15 @@ Each format injects model-appropriate instructions and ships with a default reso
 |---|---|---|
 | Flux | 1152×896 | Vivid natural-language prompt |
 | Flux 2 Klein | 1024×768 | Concise 1–2 sentence prompt |
+| Krea 2 | 1344×1024 | One detailed paragraph: subject, setting, light, camera, mood, style — no keyword lists |
+| Gemini (nano banana) | 1024×768 | Rich 2–4 sentence description, no tags |
+| GPT (ChatGPT image) | 1024×768 | Plain 3–5 sentence description with the art style stated; kept to what a mainstream service will draw |
 | Z-Image | 1024×768 | Natural language + quality tags |
 | Qwen Image | 1024×768 | Structured: subject, setting, style, colours |
 | SD 1.5 | 768×512 | Comma-separated tags with `(emphasis:1.3)` |
 | Illustrious | 1216×832 | Danbooru tags |
 | Noob AI | 1216×832 | Danbooru / Gelbooru tags |
+| Anima | 1152×896 | Lowercase tags with spaces in a fixed order (quality + rating, count, character, general), optionally a short sentence |
 | Custom | 1024×768 | Free-form (use Custom LLM Instructions) |
 
 Every standard format has a **👁️ POV** counterpart. In POV mode the prompt is rewritten so the image shows exactly what the viewer (your persona) sees: characters face the camera, the viewer's face/hair/body are never drawn, hands appear only when physically interacting, and tags like `looking_at_viewer`, `pov_hands`, `from_above`/`from_below` and `eye_contact` are added where relevant.
@@ -356,6 +363,7 @@ Position and collapsed state are stored in `localStorage` under `ai_ph_widget_po
 
 | Version | Changes |
 |---|---|
+| 3.25.1 | Current release: web bridge presets (Gemini / ChatGPT) with avatar references, Hi-res download and cancel; "Continue from the previous picture"; storyboard sheets and panel analysis for LLM Tools; Krea 2, Gemini, GPT and Anima prompt formats |
 | 1.5.0 | **🎯 Auto: Basic** mode (only essentials: prompt, negative, width, height, seed); placeholder reference reworked as a draggable floating widget with persistent position & collapsed state |
 | 1.4.0 | New preset overrides: **Seed** (0 = random), **Batch**, **CLIP / CLIP 1 / CLIP 2**; CLIP filenames auto-fetched from ComfyUI; placeholder modal (precursor to the widget) |
 | 1.3.0 | **📂 Load JSON…** workflow loader (with UI-format detection); **✨ Auto-Placeholders** scanner for KSampler / CLIPTextEncode / Checkpoint / VAE / Latent / DualCLIPLoader / Flux sampler nodes |

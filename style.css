@@ -1,5 +1,5 @@
 /* ============================================================
-   AutoIllustrator v3.3 — Styles
+   AutoIllustrator v3.6 — Styles
    ============================================================ */
 
 #auto_illustrator_settings .inline-drawer-content {
@@ -325,3 +325,145 @@
     background: rgba(255,255,255,.08); color: #ccc; border: 1px solid rgba(255,255,255,.15);
 }
 .ai-gal-confirm-no:hover { background: rgba(255,255,255,.15); }
+/* ==================== LORA LIBRARY MANAGER ==================== */
+#ai_lora_manager {
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(12,12,22,.985);
+    display: flex; flex-direction: column;
+    animation: ai-fadeIn .2s ease;
+    color: #eee;
+}
+.ai-lm-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,.1);
+    font-size: 1.02em; flex-shrink: 0; flex-wrap: wrap;
+}
+.ai-lm-header > span:first-child { font-weight: bold; }
+.ai-lm-grid {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-auto-rows: max-content;
+    gap: 10px; align-content: start;
+}
+.ai-lm-pager {
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 8px 16px;
+    border-top: 1px solid rgba(255,255,255,.1);
+    font-size: .88em;
+}
+.ai-lm-pg-btn {
+    cursor: pointer; padding: 4px 14px; border-radius: 6px;
+    background: rgba(99,102,241,.16); color: #c7d2fe;
+    border: 1px solid rgba(120,120,255,.25); user-select: none;
+    transition: background .15s;
+}
+.ai-lm-pg-btn:hover { background: rgba(99,102,241,.35); }
+.ai-lm-pg-btn.ai-lm-pg-off { opacity: .3; cursor: default; pointer-events: none; }
+.ai-lm-pg-info { color: #999; padding: 0 6px; }
+.ai-lm-empty {
+    grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+    color: #777; font-size: 1.05em; line-height: 1.7;
+}
+.ai-lm-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(120,120,255,.18);
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column;
+    transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+.ai-lm-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(150,150,255,.5);
+    box-shadow: 0 5px 18px rgba(0,0,0,.5);
+}
+.ai-lm-card.ai-lm-disabled { opacity: .42; filter: grayscale(.6); }
+.ai-lm-thumb {
+    position: relative; height: 130px; background: #14141f;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    flex-shrink: 0;
+}
+.ai-lm-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ai-lm-noimg { font-size: 40px; opacity: .3; }
+.ai-lm-cat {
+    position: absolute; bottom: 5px; left: 5px;
+    background: rgba(99,102,241,.75); color: #fff;
+    font-size: .68em; padding: 2px 7px; border-radius: 8px;
+    text-transform: uppercase; letter-spacing: .4px;
+}
+.ai-lm-toggle {
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(0,0,0,.55); border-radius: 6px; padding: 3px 5px;
+    display: flex; backdrop-filter: blur(3px); cursor: pointer;
+}
+.ai-lm-toggle input { margin: 0; cursor: pointer; }
+.ai-lm-name {
+    padding: 6px 8px 2px; font-size: .84em; font-weight: bold;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ai-lm-meta {
+    padding: 0 8px; font-size: .72em; color: #8cf;
+    display: flex; gap: 10px;
+}
+.ai-lm-desc {
+    padding: 3px 8px 8px; font-size: .72em; color: #aaa;
+    line-height: 1.35; min-height: 2.2em;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ai-lm-desc-empty { font-style: italic; color: #666; }
+
+/* Editor panel (modal inside the manager) */
+.ai-lm-editor {
+    position: absolute; inset: 0; z-index: 6;
+    background: rgba(8,8,16,.88);
+    display: flex; align-items: center; justify-content: center;
+    animation: ai-fadeIn .15s ease;
+    padding: 20px;
+}
+.ai-lm-ed-box {
+    width: 720px; max-width: 100%; max-height: 90vh;
+    display: flex; flex-direction: column;
+    background: var(--SmartThemeBlurTintColor, rgba(28,28,44,.98));
+    border: 1px solid rgba(120,120,255,.3);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    overflow: hidden;
+}
+.ai-lm-ed-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.1);
+    flex-shrink: 0;
+}
+.ai-lm-ed-head b { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-lm-ed-close { cursor: pointer; color: #aaa; font-size: 18px; padding: 0 4px; }
+.ai-lm-ed-close:hover { color: #fff; }
+.ai-lm-ed-body {
+    padding: 14px; overflow-y: auto; flex: 1; min-height: 0;
+}
+.ai-lm-ed-foot {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    flex-shrink: 0;
+}
+.ai-lm-ed-cols { display: flex; gap: 16px; }
+.ai-lm-ed-left { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+.ai-lm-ed-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ai-lm-ed-right label { font-size: .78em; color: var(--SmartThemeQuoteColor,#a5b4fc); margin-top: 5px; }
+.ai-lm-ed-row { display: flex; gap: 8px; }
+.ai-lm-ed-row > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ai-lm-ed-preview {
+    height: 150px; background: #14141f; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    border: 1px solid rgba(120,120,255,.2);
+}
+.ai-lm-ed-preview img { width: 100%; height: 100%; object-fit: cover; }
+.ai-lm-ed-prevbtns { display: flex; gap: 4px; }
+.ai-lm-ed-civ { display: flex; gap: 4px; align-items: center; }
+.ai-lm-ed-civ input { flex: 1; min-width: 0; }
+@media (max-width: 640px) {
+    .ai-lm-ed-cols { flex-direction: column; }
+    .ai-lm-ed-left { width: 100%; }
+    .ai-lm-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
